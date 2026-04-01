@@ -1,11 +1,16 @@
-# Підключаємо модуль S3 та DynamoDB
+# Налаштування провайдера (обов'язково)
+provider "aws" {
+  region = "us-west-2"
+}
+
+# 1. Створюємо S3 та DynamoDB для стейту
 module "s3_backend" {
   source      = "./modules/s3-backend"
-  bucket_name = "ваше ім'я"
+  bucket_name = "ihorborys-lesson-5-bucket"
   table_name  = "terraform-locks"
 }
 
-# Підключаємо модуль VPC
+# 2. Побудова мережі (VPC)
 module "vpc" {
   source             = "./modules/vpc"
   vpc_cidr_block     = "10.0.0.0/16"
@@ -15,9 +20,9 @@ module "vpc" {
   vpc_name           = "lesson-5-vpc"
 }
 
-# Підключаємо модуль ECR
+# 3. Створення репозиторію ECR
 module "ecr" {
-  source      = "./modules/ecr"
-  ecr_name    = "lesson-5-ecr"
+  source       = "./modules/ecr"
+  ecr_name     = "lesson-5-ecr"
   scan_on_push = true
 }
