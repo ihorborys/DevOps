@@ -79,6 +79,8 @@ hw_7/
 #### Запуск міграцій бази даних усередині контейнера
 *kubectl exec -it <pod_name> -- python manage.py migrate*
 
+---
+
 ## ⚙️ Технічні особливості реалізації
 ### Security: 
 *Налаштовано ALLOWED_HOSTS у Django для безпечної обробки запитів через AWS Load Balancer.*
