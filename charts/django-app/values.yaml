@@ -1,0 +1,25 @@
+replicaCount: 1
+
+image:
+  repository: 564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: LoadBalancer
+  port: 80
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+configData:
+  DEBUG: "True"
+  POSTGRES_PORT: "5432"
+  POSTGRES_HOST: "db"
+  POSTGRES_USER: "django_user"
+  POSTGRES_DB: "django_db"
+  POSTGRES_PASSWORD: "pass9764gd"
+  ALLOWED_HOSTS: "*"
