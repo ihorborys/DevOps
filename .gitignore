@@ -1,0 +1,14 @@
+.terraform/
+
+*.tfstate
+*.tfstate.backup
+
+.terraform.lock.hcl
+
+*.tfvars
+*.tfvars.json
+
+*Zone.Identifier
+
+.vscode/
+.DS_Store
