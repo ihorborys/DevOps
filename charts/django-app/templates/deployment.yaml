@@ -20,10 +20,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8000
+
+          # 1. Підключаємо загальні змінні (DEBUG, DB_HOST, DB_NAME тощо)
           envFrom:
             - configMapRef:
                 name: {{ .Release.Name }}-config
-          # ----------------------
+
+          # 2. Підключаємо секретні дані (пароль) окремо
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-db-secret
+                  key: postgres-password
+
           resources:
             requests:
               cpu: "100m"

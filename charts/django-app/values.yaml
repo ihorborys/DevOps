@@ -1,3 +1,4 @@
+# Кількість реплік для Django
 replicaCount: 1
 
 image:
@@ -9,17 +10,26 @@ service:
   type: LoadBalancer
   port: 80
 
+# Налаштування автоскейлінгу (згідно з ДЗ: 2-6 реплік)
 hpa:
   enabled: true
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 
+# Загальні налаштування (ConfigMap)
 configData:
-  DEBUG: "True"
-  POSTGRES_PORT: "5432"
-  POSTGRES_HOST: "db"
-  POSTGRES_USER: "django_user"
-  POSTGRES_DB: "django_db"
-  POSTGRES_PASSWORD: "pass9764gd"
+  DEBUG: "False"
   ALLOWED_HOSTS: "*"
+  POSTGRES_HOST: "db"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "django_db"
+  POSTGRES_USER: "django_user"
+
+# Секція для PostgreSQL та Secret
+# Дані звідси підуть у postgres.yaml та secrets.yaml
+postgresql:
+  dbName: "django_db"
+  user: "django_user"
+  password: "pass9764gd"
+  storageSize: 1Gi           # Розмір диска для PVC
