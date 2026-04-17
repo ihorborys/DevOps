@@ -55,17 +55,21 @@ spec:
         stage('Update Helm Tag in Git') {
             steps {
                 container('git') {
-                    withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GIT_PASS', usernameVariable: 'GIT_USER')]) {
-                        sh """
-                            git config user.email "jenkins@rapidfire.com"
-                            git config user.name "Jenkins CI"
+                    // Додаємо цю обгортку, щоб зайти в папку з кодом
+                    dir("${WORKSPACE}") {
+                        withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GIT_PASS', usernameVariable: 'GIT_USER')]) {
+                            sh """
+                                git config user.email "jenkins@rapidfire.com"
+                                git config user.name "Jenkins CI"
 
-                            sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' charts/django-app/values.yaml
+                                # Оновлюємо таг у файлі values.yaml
+                                sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' charts/django-app/values.yaml
 
-                            git add charts/django-app/values.yaml
-                            git commit -m "Bump image version to ${IMAGE_TAG} [skip ci]"
-                            git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO_URL} HEAD:lesson-8-9
-                        """
+                                git add charts/django-app/values.yaml
+                                git commit -m "Bump image version to ${IMAGE_TAG} [skip ci]"
+                                git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO_URL} HEAD:lesson-8-9
+                            """
+                        }
                     }
                 }
             }
