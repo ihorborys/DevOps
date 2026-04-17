@@ -32,7 +32,6 @@ spec:
     environment {
         ECR_URL = "564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo"
         IMAGE_TAG = "v${BUILD_NUMBER}"
-        # Заміни на свій реальний репозиторій
         GIT_REPO_URL = "github.com/ihorborys/DevOps.git"
     }
 
