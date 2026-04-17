@@ -20,7 +20,6 @@ spec:
   volumes:
     - name: kaniko-secret
       secret:
-        # Цей секрет ми створимо в наступному кроці
         secretName: kaniko-secret
         items:
           - key: .dockerconfigjson
@@ -38,7 +37,7 @@ spec:
     stages {
         stage('Checkout Code') {
             steps {
-                // Виправляємо помилку "порожнього контексту": клонуємо код у workspace
+                // Клонуємо код у робочу область
                 checkout scm
             }
         }
@@ -46,7 +45,7 @@ spec:
         stage('Build & Push to ECR') {
             steps {
                 container('kaniko') {
-                    // Використовуємо ${WORKSPACE}, щоб Kaniko точно бачив клонований код
+                    // Kaniko збирає образ, використовуючи Dockerfile у корені
                     sh "/kaniko/executor --context ${WORKSPACE} --dockerfile Dockerfile --destination ${ECR_URL}:${IMAGE_TAG}"
                 }
             }
@@ -55,16 +54,21 @@ spec:
         stage('Update Helm Tag in Git') {
             steps {
                 container('git') {
-                    // Додаємо цю обгортку, щоб зайти в папку з кодом
+                    // Обов'язково заходимо в директорію WORKSPACE
                     dir("${WORKSPACE}") {
                         withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GIT_PASS', usernameVariable: 'GIT_USER')]) {
                             sh """
+                                # Вирішуємо проблему з правами доступу Git (fatal: not in a git directory)
+                                git config --global --add safe.directory '*'
+
+                                # Налаштування користувача Git
                                 git config user.email "jenkins@rapidfire.com"
                                 git config user.name "Jenkins CI"
 
-                                # Оновлюємо таг у файлі values.yaml
+                                # Оновлюємо таг версії в Helm-чарті
                                 sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' charts/django-app/values.yaml
 
+                                # Фіксуємо зміни та відправляємо в GitHub
                                 git add charts/django-app/values.yaml
                                 git commit -m "Bump image version to ${IMAGE_TAG} [skip ci]"
                                 git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO_URL} HEAD:lesson-8-9
