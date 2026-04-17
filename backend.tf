@@ -1,10 +1,13 @@
-# terraform {
-#   backend "s3" {
-#     bucket         = "ihorborys-lesson-5-bucket"
-#     key            = "lesson-5/terraform.tfstate"
-#     region         = "us-west-2"
-#     dynamodb_table = "terraform-locks"
-#     encrypt        = true
-#   }
-# }
-#
+terraform {
+  backend "s3" {
+    bucket         = "ihorborys-hw9-state-bucket"
+
+    key            = "eks/terraform.tfstate"
+
+    region         = "us-west-2"
+
+    use_lockfile   = true
+
+    encrypt        = true
+  }
+}
