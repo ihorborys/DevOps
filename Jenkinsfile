@@ -46,7 +46,7 @@ spec:
         stage('Build & Push to ECR') {
             steps {
                 container('kaniko') {
-                    # Використовуємо ${WORKSPACE}, щоб Kaniko точно бачив клонований код
+                    // Використовуємо ${WORKSPACE}, щоб Kaniko точно бачив клонований код
                     sh "/kaniko/executor --context ${WORKSPACE} --dockerfile Dockerfile --destination ${ECR_URL}:${IMAGE_TAG}"
                 }
             }
