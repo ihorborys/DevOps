@@ -1,0 +1,22 @@
+controller:
+  componentName: "jenkins-controller"
+  adminPassword: "admin" # Можна задати свій або витягти автоматично
+  serviceType: LoadBalancer # Щоб зайти в UI через браузер
+
+  # Налаштування хмари Kubernetes (щоб Jenkins створював поди-агенти)
+  installPlugins:
+    - kubernetes:4029.v571204433e45
+    - workflow-aggregator:596.v8c21c963d92d
+    - git:5.2.1
+    - amazon-ecr:1.2.0
+
+rbac:
+  create: true
+  readSecrets: true
+
+# Опис того, як виглядає под-агент
+agent:
+  enabled: true
+  image: "jenkins/inbound-agent"
+  tag: "latest"
+  # Можна додати специфікації для Kaniko контейнера тут або в Jenkinsfile
