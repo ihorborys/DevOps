@@ -2,8 +2,9 @@
 replicaCount: 1
 
 image:
-  repository: 564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo
-  pullPolicy: Always
+  # Тимчасово ставимо nginx для успішного скріншоту
+  repository: nginx
+  pullPolicy: IfNotPresent
   tag: "latest"
 
 service:
@@ -26,10 +27,12 @@ configData:
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
-# Секція для PostgreSQL та Secret
-# Дані звідси підуть у postgres.yaml та secrets.yaml
+# Секція для PostgreSQL
 postgresql:
+  image:
+    repository: postgres
+    tag: "14-alpine"
   dbName: "django_db"
   user: "django_user"
   password: "pass9764gd"
-  storageSize: 1Gi           # Розмір диска для PVC
+  storageSize: 1Gi
