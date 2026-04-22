@@ -19,17 +19,20 @@ module "eks" {
   source          = "./modules/eks"
   cluster_name    = "eks-cluster-demo"
   subnet_ids      = module.vpc.private_subnets
+
+  # ПОВЕРТАЄМО ПРАЦЮЮЧИЙ ТИП
   instance_type   = "t3.small"
   capacity_type   = "SPOT"
-  desired_size    = 2
-  max_size        = 3
-  min_size        = 1
+
+  # ЗБІЛЬШУЄМО КІЛЬКІСТЬ (щоб вистачило RAM)
+  desired_size    = 3
+  max_size        = 4
+  min_size        = 2
 }
 
 # 4. Модуль Jenkins
 module "jenkins" {
   source         = "./modules/jenkins"
-  # ВИКОРИСТОВУЄМО ЗМІННУ ЗАМІСТЬ ТЕКСТУ
   admin_password = var.db_password
   depends_on     = [module.eks]
 }
@@ -38,15 +41,12 @@ module "jenkins" {
 module "argo_cd" {
   source     = "./modules/argo_cd"
   depends_on = [module.eks]
-
-  # ВИКОРИСТОВУЄМО ЗМІННУ ЗАМІСТЬ ПОСИЛАННЯ
   repo_url   = var.github_repo_url
 }
 
-# 6. S3 Backend (Ресурс для стейту)
+# 6. S3 Backend
 module "s3_backend" {
   source      = "./modules/s3-backend"
-  # Можна також винести в змінні, якщо плануєш часто змінювати
   bucket_name = "ihorborys-hw9-state-bucket"
   table_name  = "terraform-locks"
 }
