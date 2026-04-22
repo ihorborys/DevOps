@@ -4,7 +4,7 @@ resource "aws_db_instance" "standard" {
 
   identifier           = var.name
   engine               = "postgres"
-  engine_version       = var.engine_version
+  engine_version       = "15"
   instance_class       = var.instance_class
   allocated_storage    = 20
   db_name              = var.db_name
@@ -23,7 +23,8 @@ resource "aws_rds_cluster" "aurora" {
 
   cluster_identifier      = "${var.name}-cluster"
   engine                  = "aurora-postgresql"
-  engine_version          = var.engine_version
+  # Для Aurora теж краще вказати мажорну версію "15"
+  engine_version          = "15"
   database_name           = var.db_name
   master_username         = var.username
   master_password         = var.password

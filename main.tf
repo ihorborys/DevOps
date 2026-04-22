@@ -50,3 +50,22 @@ module "s3_backend" {
   bucket_name = "ihorborys-hw9-state-bucket"
   table_name  = "terraform-locks"
 }
+
+# 7. Модуль RDS (Виправлений під твої змінні)
+module "rds" {
+  source     = "./modules/rds"
+
+  # Використовуємо імена, які вимагає модуль
+  name       = "maxgear-db"      # Було db_name
+  username   = "dbadmin"         # Було db_username (перевір, чи в модулі це "username")
+  password   = var.db_password   # Було db_password
+
+  # Ці параметри зазвичай стандартні, але перевір їх у модулі
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+  use_aurora = false
+
+  tags = {
+    Project = "MaxGear"
+  }
+}
