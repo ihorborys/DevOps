@@ -58,3 +58,54 @@ Synced (Зелена галочка): Означає, що стан у клас�
 В інтерфейсі Argo CD відображається повна структура додатка: Service, ConfigMap, Deployment та Pods, що підтверджує коректну роботу Helm-чарта.
 
  ```
+
+# RDS/Aurora Terraform Module
+
+Цей модуль дозволяє розгортати або стандартний інстанс Amazon RDS (PostgreSQL/MySQL), або кластер Amazon Aurora залежно від прапора `use_aurora`.
+
+## Приклад використання
+
+```hcl
+module "db" {
+  source     = "./modules/rds"
+  name       = "my-project-db"
+  use_aurora = false  # Змініть на true для Aurora
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+  password   = "SuperSecret123"
+}
+
+Назва,Опис,Тип,Дефолт
+name,Назва бази/кластера,string,-
+use_aurora,Перемикач типу бази,bool,false
+vpc_id,ID мережі,string,-
+subnet_ids,Список підмереж,list,-
+password,Пароль адміністратора,string,-
+
+---
+
+### Підключення модуля в корені (`main.tf`)
+Тепер виходимо з папки модуля назад у корінь проєкту і в твоєму головному `main.tf` додаємо виклик. 
+
+**Важливо:** База не зможе створитися без мережі. Переконайся, що в тебе там уже є виклик `module "vpc"`.
+
+```hcl
+module "rds" {
+  source = "./modules/rds"
+
+  name       = "maxgear-db"
+  use_aurora = false # Поки що ставимо false, щоб зекономити гроші (RDS дешевше)
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+  
+  username   = "postgres"
+  password   = "Admin123AWS" # Краще використовувати змінні, але для ДЗ можна так
+  db_name    = "maxgear"
+
+  tags = {
+    Environment = "dev"
+    Project     = "Max Gear"
+  }
+}
