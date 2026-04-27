@@ -44,13 +44,6 @@ module "argo_cd" {
   repo_url   = var.github_repo_url
 }
 
-# 6. S3 Backend
-module "s3_backend" {
-  source      = "./modules/s3-backend"
-  bucket_name = "ihorborys-hw9-state-bucket"
-  table_name  = "terraform-locks"
-}
-
 # 7. Модуль RDS (Виправлений під твої змінні)
 module "rds" {
   source     = "./modules/rds"
@@ -68,4 +61,10 @@ module "rds" {
   tags = {
     Project = "MaxGear"
   }
+}
+
+# 8. Моніторинг (Grafana + Prometheus)
+module "monitoring" {
+  source     = "./modules/monitoring"
+  depends_on = [module.eks] # КРИТИЧНО ВАЖЛИВО
 }
