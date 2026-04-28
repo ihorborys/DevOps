@@ -25,14 +25,16 @@ configData:
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
-# Секція PostgreSQL
+# Секція PostgreSQL — ВИПРАВЛЕНО для Argo CD та AWS
 postgresql:
   enabled: true
+  # ВАЖЛИВО: додаємо пароль прямо сюди, щоб secrets.yaml його побачив
+  password: "pass9764gd"
   auth:
     database: "django_db"
     username: "django_user"
     password: "pass9764gd"
   primary:
     persistence:
-      # Вимикаємо диски, щоб прибрати статус Pending
+      # Вимикаємо диски, щоб прибрати статус Pending у PVC
       enabled: false
