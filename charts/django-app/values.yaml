@@ -1,18 +1,16 @@
-# Кількість реплік (ставимо 2, щоб відповідало налаштуванням HPA)
+# Кількість реплік (згідно з HPA)
 replicaCount: 2
 
 image:
-  # ПОВНА адреса твого репозиторію в AWS ECR
   repository: 564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo
   pullPolicy: IfNotPresent
-  # Тег, який успішно пушнув твій Jenkins
   tag: "v15"
 
 service:
   type: LoadBalancer
   port: 80
 
-# Налаштування автоскейлінгу (згідно з ДЗ: 2-6 реплік)
+# Налаштування автоскейлінгу
 hpa:
   enabled: true
   minReplicas: 2
@@ -23,17 +21,20 @@ hpa:
 configData:
   DEBUG: "False"
   ALLOWED_HOSTS: "*"
-  POSTGRES_HOST: "db"
+  # ВИПРАВЛЕНО: назва хоста має збігатися з назвою сервісу бази в K8s
+  POSTGRES_HOST: "django-app-postgresql"
   POSTGRES_PORT: "5432"
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
 # Секція для PostgreSQL
 postgresql:
-  image:
-    repository: postgres
-    tag: "14-alpine"
-  dbName: "django_db"
-  user: "django_user"
-  password: "pass9764gd"
-  storageSize: 1Gi
+  # ВИПРАВЛЕНО: додаємо команду для запуску бази
+  enabled: true
+  auth:
+    database: "django_db"
+    username: "django_user"
+    password: "pass9764gd"
+  primary:
+    persistence:
+      size: 1Gi
