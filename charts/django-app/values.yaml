@@ -1,15 +1,39 @@
+replicaCount: 2
+
+image:
+  repository: 564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo
+  pullPolicy: IfNotPresent
+  tag: "v15"
+
+service:
+  type: LoadBalancer
+  port: 80
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+configData:
+  DEBUG: "False"
+  ALLOWED_HOSTS: "*"
+  POSTGRES_HOST: "django-app-postgresql"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "django_db"
+  POSTGRES_USER: "django_user"
+
+# Спрощена секція PostgreSQL - БЕЗ Bitnami-специфіки
 postgresql:
   enabled: true
-  # ФОРСУЄМО надійний шлях до образу
   image:
     registry: docker.io
-    repository: bitnami/postgresql
-    tag: 15.3.0
-    pullPolicy: IfNotPresent
+    repository: postgres
+    tag: 15-alpine
   auth:
     database: "django_db"
     username: "django_user"
     password: "pass9764gd"
   primary:
     persistence:
-      enabled: false  # Залишаємо вимкненим, щоб не чекати на диски
+      enabled: false  # Диски вимкнені, щоб не було статусу Pending
