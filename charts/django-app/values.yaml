@@ -1,4 +1,4 @@
-# Кількість реплік (згідно з HPA)
+# Кількість реплік
 replicaCount: 2
 
 image:
@@ -10,27 +10,27 @@ service:
   type: LoadBalancer
   port: 80
 
-# Налаштування автоскейлінгу
 hpa:
   enabled: true
   minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 70
 
-# Загальні налаштування (ConfigMap)
+# Налаштування для ConfigMap
 configData:
   DEBUG: "False"
   ALLOWED_HOSTS: "*"
-  # ВИПРАВЛЕНО: назва хоста має збігатися з назвою сервісу бази в K8s
+  # ВАЖЛИВО: назва має бути саме такою для зв'язку всередині K8s
   POSTGRES_HOST: "django-app-postgresql"
   POSTGRES_PORT: "5432"
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
-# Секція для PostgreSQL
+# Секція PostgreSQL — ТУТ БУЛА ПОМИЛКА СТРУКТУРИ
 postgresql:
-  # ВИПРАВЛЕНО: додаємо команду для запуску бази
   enabled: true
+  # Ми додаємо пароль і сюди, і в auth, щоб Helm точно його знайшов
+  password: "pass9764gd"
   auth:
     database: "django_db"
     username: "django_user"
