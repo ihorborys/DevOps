@@ -5,7 +5,7 @@ image:
   # Тимчасово ставимо nginx для успішного скріншоту
   repository: nginx
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "v15"
 
 service:
   type: LoadBalancer
@@ -31,7 +31,7 @@ configData:
 postgresql:
   image:
     repository: postgres
-    tag: "14-alpine"
+    tag: "v15"
   dbName: "django_db"
   user: "django_user"
   password: "pass9764gd"
