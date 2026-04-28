@@ -20,21 +20,19 @@ hpa:
 configData:
   DEBUG: "False"
   ALLOWED_HOSTS: "*"
-  # ВАЖЛИВО: назва має бути саме такою для зв'язку всередині K8s
   POSTGRES_HOST: "django-app-postgresql"
   POSTGRES_PORT: "5432"
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
-# Секція PostgreSQL — ТУТ БУЛА ПОМИЛКА СТРУКТУРИ
+# Секція PostgreSQL
 postgresql:
   enabled: true
-  # Ми додаємо пароль і сюди, і в auth, щоб Helm точно його знайшов
-  password: "pass9764gd"
   auth:
     database: "django_db"
     username: "django_user"
     password: "pass9764gd"
   primary:
     persistence:
-      size: 1Gi
+      # Вимикаємо диски, щоб прибрати статус Pending
+      enabled: false
