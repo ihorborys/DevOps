@@ -1,11 +1,12 @@
-# Кількість реплік для Django
-replicaCount: 1
+# Кількість реплік (ставимо 2, щоб відповідало налаштуванням HPA)
+replicaCount: 2
 
 image:
-  # Тимчасово ставимо nginx для успішного скріншоту
-  repository: nginx
+  # ПОВНА адреса твого репозиторію в AWS ECR
+  repository: 564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo
   pullPolicy: IfNotPresent
-  tag: "latest"
+  # Тег, який успішно пушнув твій Jenkins
+  tag: "v15"
 
 service:
   type: LoadBalancer
