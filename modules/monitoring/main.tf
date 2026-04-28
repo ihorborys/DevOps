@@ -4,7 +4,26 @@ resource "helm_release" "prometheus" {
   chart      = "kube-prometheus-stack"
   namespace  = "monitoring"
   create_namespace = true
+  version    = "45.7.1" # Фіксуємо версію
 
-  # Це встановить і Prometheus, і Grafana відразу
+  values = [
+    yamlencode({
+      prometheus = {
+        prometheusSpec = {
+          storageSpec = {
+            volumeClaimTemplate = {
+              spec = {
+                accessModes = ["ReadWriteOnce"]
+                resources = {
+                  requests = {
+                    storage = "10Gi"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+  ]
 }
-

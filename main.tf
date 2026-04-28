@@ -18,7 +18,7 @@ module "ecr" {
 module "eks" {
   source          = "./modules/eks"
   cluster_name    = "eks-cluster-demo"
-  subnet_ids      = module.vpc.private_subnets
+  subnet_ids = module.vpc.private_subnet_ids
 
   # ПОВЕРТАЄМО ПРАЦЮЮЧИЙ ТИП
   instance_type   = "t3.small"
@@ -48,18 +48,20 @@ module "argo_cd" {
 module "rds" {
   source     = "./modules/rds"
 
-  # Використовуємо імена, які вимагає модуль
-  name       = "maxgear-db"      # Було db_name
-  username   = "dbadmin"         # Було db_username (перевір, чи в модулі це "username")
-  password   = var.db_password   # Було db_password
+  # Загальні назви для проекту
+  name       = "production-db"
+  username   = "dbadmin"
+  password   = var.db_password
 
-  # Ці параметри зазвичай стандартні, але перевір їх у модулі
   vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-  use_aurora = false
+
+  # ВИПРАВЛЕНО: Використовуємо коректний output з модуля VPC
+  subnet_ids = module.vpc.private_subnet_ids
+
+  use_aurora = false # Можна змінити на true, якщо потрібна Aurora
 
   tags = {
-    Project = "MaxGear"
+    Project = "CloudInfrastructure"
   }
 }
 

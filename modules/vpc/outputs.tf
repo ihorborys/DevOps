@@ -1,3 +1,4 @@
+# ------------- VPC -----------------
 output "vpc_id" {
   description = "ID створеної VPC"
   value       = aws_vpc.main.id
@@ -8,7 +9,7 @@ output "public_subnets" {
   value       = aws_subnet.public[*].id
 }
 
-output "private_subnets" {
+output "private_subnet_ids" {
   description = "Список ID приватних підмереж"
   value       = aws_subnet.private[*].id
 }

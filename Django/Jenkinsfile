@@ -1,13 +1,39 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    command: ["sleep"]
+    args: ["99d"]
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+  - name: git-tool
+    image: alpine/git:latest
+    command: ["sleep"]
+    args: ["99d"]
+  volumes:
+  - name: docker-config
+    projected:
+      sources:
+      - secret:
+          name: regcred
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
+        }
+    }
 
     environment {
-        // Твій репозиторій в AWS
         ECR_URL = "564415061836.dkr.ecr.us-west-2.amazonaws.com/django-app-repo"
-        // Використовуємо BUILD_NUMBER для унікальності, або постав v7, якщо Argo чекає саме її
         IMAGE_TAG = "v${BUILD_NUMBER}"
         GIT_REPO_URL = "github.com/ihorborys/DevOps.git"
-        AWS_REGION = "us-west-2"
     }
 
     stages {
@@ -17,37 +43,37 @@ pipeline {
             }
         }
 
-        stage('Build & Push to ECR') {
+        stage('Build & Push to ECR (Kaniko)') {
             steps {
-                script {
-                    // 1. Логінимося в AWS ECR
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin 564415061836.dkr.ecr.${AWS_REGION}.amazonaws.com"
-
-                    // 2. Збираємо образ (вказуємо шлях до папки Django, де твій Dockerfile)
-                    sh "docker build -t ${ECR_URL}:${IMAGE_TAG} ./Django"
-
-                    // 3. Відправляємо образ у хмару
-                    sh "docker push ${ECR_URL}:${IMAGE_TAG}"
+                container('kaniko') {
+                    sh """
+                        /kaniko/executor \
+                        --context ${env.WORKSPACE} \
+                        --dockerfile ${env.WORKSPACE}/Django/Dockerfile \
+                        --destination ${ECR_URL}:${IMAGE_TAG} \
+                        --cache=true
+                    """
                 }
             }
         }
 
         stage('Update Helm Tag in Git') {
             steps {
-                // Використовуємо твій токен GitHub, який ти створив у Jenkins
-                withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GIT_PASS', usernameVariable: 'GIT_USER')]) {
-                    sh """
-                        git config --global --add safe.directory '*'
-                        git config user.email "jenkins@rapidfire.com"
-                        git config user.name "Jenkins CI"
+                container('git-tool') {
+                    withCredentials([usernamePassword(credentialsId: 'github-token', passwordVariable: 'GIT_PASS', usernameVariable: 'GIT_USER')]) {
+                        sh """
+                            git config --global --add safe.directory '*'
+                            git config user.email "jenkins@rapidfire.com"
+                            git config user.name "Jenkins CI"
 
-                        # Оновлюємо таг у values.yaml
-                        sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' charts/django-app/values.yaml
+                            # Оновлюємо таг у values.yaml
+                            sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' charts/django-app/values.yaml
 
-                        git add charts/django-app/values.yaml
-                        git commit -m "Bump image version to ${IMAGE_TAG} [skip ci]"
-                        git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO_URL} HEAD:final-project
-                    """
+                            git add charts/django-app/values.yaml
+                            git commit -m "Bump image version to ${IMAGE_TAG} [skip ci]"
+                            git push https://${GIT_USER}:${GIT_PASS}@${GIT_REPO_URL} HEAD:final-project
+                        """
+                    }
                 }
             }
         }
