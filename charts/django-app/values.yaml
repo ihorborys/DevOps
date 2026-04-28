@@ -23,17 +23,23 @@ configData:
   POSTGRES_DB: "django_db"
   POSTGRES_USER: "django_user"
 
-# Спрощена секція PostgreSQL - БЕЗ Bitnami-специфіки
+# Прописуємо паролі в усіх можливих місцях для secrets.yaml
+db:
+  password: "pass9764gd"
+  user: "django_user"
+  name: "django_db"
+
 postgresql:
   enabled: true
-  image:
-    registry: docker.io
-    repository: postgres
-    tag: 15-alpine
+  password: "pass9764gd"
   auth:
     database: "django_db"
     username: "django_user"
     password: "pass9764gd"
+  image:
+    registry: docker.io
+    repository: postgres
+    tag: 15-alpine
   primary:
     persistence:
-      enabled: false  # Диски вимкнені, щоб не було статусу Pending
+      enabled: false
