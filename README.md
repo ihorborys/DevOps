@@ -1,111 +1,105 @@
-# DevOps Project: Infrastructure as Code & GitOps Pipeline
+# 🚀 Final DevOps Project — AWS Infrastructure with Terraform, EKS, CI/CD & Monitoring
 
-Цей проєкт демонструє повний цикл автоматизації: від створення хмарної інфраструктури в AWS за допомогою Terraform до налаштування CI/CD пайплайнів через Jenkins та Argo CD.
+## 📋 Опис проєкту
 
-### 1. Застосування інфраструктури (Terraform)
-
-Для розгортання кластера EKS та необхідних ресурсів AWS (S3, VPC, IAM) виконайте наступні кроки в директорії з Terraform-файлами:
-
-1. **Ініціалізація:**
-   ```bash
-   terraform init
-   
- ```
-Перегляд плану:
-
-Bash
-terraform plan
-Застосування змін:
-
-Bash
-terraform apply -auto-approve
-Після завершення Terraform оновить ваш kubeconfig, щоб ви могли керувати кластером через kubectl.
-
-2. Перевірка Jenkins Job (CI Pipeline)
-Jenkins відповідає за автоматизацію процесів збірки та оновлення конфігурацій.
-
-Доступ до інтерфейсу:
-Відкрийте браузер за адресою http://localhost:8080.
-
-Перевірка статусу:
-
-Оберіть ваш пайплайн (наприклад, django-app-pipeline).
-
-Перейдіть у розділ Build History.
-
-Натисніть на останню збірку та оберіть Console Output, щоб переконатися, що всі етапи пройшли успішно.
-
-Результат:
-Jenkins автоматично оновить маніфести у репозиторії, що стане тригером для розгортання в Argo CD.
-
-3. Візуалізація результату в Argo CD (CD Pipeline)
-Argo CD реалізує GitOps-підхід, синхронізуючи стан кластера з вашим GitHub-репозиторієм.
-
-Доступ до панелі керування:
-Використовуйте port-forward для доступу до сервісу:
-
-Bash
-kubectl port-forward svc/argocd-server 8081:443 -n argocd
-Адреса в браузері: https://localhost:8081.
-
-Перевірка стану додатка:
-
-Healthy (Зелене серце): Означає, що всі компоненти (Deployment, Pods, HPA) успішно запущені в EKS.
-
-Synced (Зелена галочка): Означає, що стан у кластері повністю відповідає коду в GitHub.
-
-Дерево ресурсів:
-В інтерфейсі Argo CD відображається повна структура додатка: Service, ConfigMap, Deployment та Pods, що підтверджує коректну роботу Helm-чарта.
-
- ```
-
-# RDS/Aurora Terraform Module
-
-Цей модуль дозволяє розгортати або стандартний інстанс Amazon RDS (PostgreSQL/MySQL), або кластер Amazon Aurora залежно від прапора `use_aurora`.
-
-## Приклад використання
-
-```hcl
-module "db" {
-  source     = "./modules/rds"
-  name       = "my-project-db"
-  use_aurora = false  # Змініть на true для Aurora
-
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-  password   = "SuperSecret123"
-}
-
-Назва,Опис,Тип,Дефолт
-name,Назва бази/кластера,string,-
-use_aurora,Перемикач типу бази,bool,false
-vpc_id,ID мережі,string,-
-subnet_ids,Список підмереж,list,-
-password,Пароль адміністратора,string,-
+Фінальний проєкт розгортає повноцінну хмарну інфраструктуру на **AWS** з використанням **Terraform** (IaC), **Kubernetes (EKS)**, **CI/CD пайплайну** (Jenkins + Argo CD) та **моніторингу** (Prometheus + Grafana).
 
 ---
 
-### Підключення модуля в корені (`main.tf`)
-Тепер виходимо з папки модуля назад у корінь проєкту і в твоєму головному `main.tf` додаємо виклик. 
+## 🏗️ Архітектура
 
-**Важливо:** База не зможе створитися без мережі. Переконайся, що в тебе там уже є виклик `module "vpc"`.
+```
+AWS Cloud
+├── VPC (підмережі, Internet Gateway, маршрутизація)
+├── EKS (Kubernetes кластер)
+│   ├── Jenkins (CI)
+│   ├── Argo CD (CD)
+│   └── Prometheus + Grafana (Моніторинг)
+├── RDS / Aurora (База даних)
+└── ECR (Container Registry)
+```
 
-```hcl
-module "rds" {
-  source = "./modules/rds"
+---
 
-  name       = "maxgear-db"
-  use_aurora = false # Поки що ставимо false, щоб зекономити гроші (RDS дешевше)
+## 🧱 Структура репозиторію
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets
-  
-  username   = "postgres"
-  password   = "Admin123AWS" # Краще використовувати змінні, але для ДЗ можна так
-  db_name    = "maxgear"
+```
+Project/
+├── main.tf                   # Головний файл підключення модулів
+├── backend.tf                # Налаштування бекенду (S3 + DynamoDB)
+├── outputs.tf                # Загальні виводи ресурсів
+│
+├── modules/
+│   ├── s3-backend/           # S3 бакет + DynamoDB для Terraform state
+│   ├── vpc/                  # VPC, підмережі, Internet Gateway, маршрути
+│   ├── ecr/                  # ECR репозиторій для Docker образів
+│   ├── eks/                  # EKS кластер + EBS CSI Driver
+│   ├── rds/                  # RDS / Aurora база даних
+│   ├── jenkins/              # Helm-установка Jenkins
+│   └── argo_cd/              # Helm-установка Argo CD + Helm-чарти застосунку
+│       └── charts/           # App of Apps (applications + repositories)
+│
+├── charts/
+│   └── django-app/           # Helm-чарт для Django застосунку
+│       ├── templates/
+│       │   ├── deployment.yaml
+│       │   ├── service.yaml
+│       │   ├── configmap.yaml
+│       │   └── hpa.yaml
+│       ├── Chart.yaml
+│       └── values.yaml
+│
+└── Django/
+    ├── app/
+    ├── Dockerfile
+    ├── Jenkinsfile
+    └── docker-compose.yaml
+```
 
-  tags = {
-    Environment = "dev"
-    Project     = "Max Gear"
-  }
-}
+---
+
+## ⚙️ Технічний стек
+
+| Компонент     | Технологія              |
+|---------------|-------------------------|
+| Хмара         | AWS                     |
+| IaC           | Terraform               |
+| Мережа        | VPC, Security Groups    |
+| Контейнери    | EKS (Kubernetes)        |
+| Registry      | ECR                     |
+| База даних    | RDS / Aurora PostgreSQL |
+| CI            | Jenkins                 |
+| CD            | Argo CD                 |
+| Моніторинг    | Prometheus + Grafana    |
+| Застосунок    | Django                  |
+
+---
+
+## 🚀 Розгортання інфраструктури
+
+### 1. Підготовка
+
+```bash
+terraform init
+```
+
+Перевір змінні та параметри перед застосуванням.
+
+### 2. Розгортання
+
+```bash
+terraform apply
+```
+
+### 3. Перевірка стану ресурсів
+
+```bash
+kubectl get all -n jenkins
+kubectl get all -n argocd
+kubectl get all -n monitoring
+```
+
+
+## 👤 Автор
+
+**Борис Ігор Романович** — DevOps курс, фінальний проєкт
